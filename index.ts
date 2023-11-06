@@ -1,8 +1,10 @@
-#!/usr/local/bin/bun
 import assert from "assert";
 import { sleepSync } from "bun";
 import { AES, enc, mode, pad } from "crypto-js";
+import { RootObject } from "./type";
 
+
+let record: Record<string, boolean> = {}
 
 function encryptWord(word: string) {
     const key = enc.Utf8.parse(encodeURIComponent("8NONwyJtHesysWpM"))
@@ -11,119 +13,188 @@ function encryptWord(word: string) {
         padding: pad.Pkcs7,
         mode: mode.ECB
     });
-    console.log(encrypted.toString())
     return encrypted.toString()
 }
 
-let customFetch = (
+async function pullNewCookie() {
+    const res = await fetch("https://itsm.yimidida.com/", { redirect: 'manual' });
+    return res.headers.get("Set-Cookie")!;
+}
+
+
+let customFetch = (Cookie: string) => (
     url: string | URL | Request,
     init?: FetchRequestInit,
 ) => {
     return fetch("https://itsm.yimidida.com" + url, {
         headers: {
-            Cookie: "userLanguage=zh-cn;JSESSIONID=9E9F698F83FD1456B987022E13CA2331"
+            Cookie
         }, ...init
     })
 }
 
-async function login({ username, password }: { [key: string]: string }) {
+async function loginItsm({ username, password, request }: { [key: string]: any }) {
     const [j_username, j_password] = [encryptWord(username), encryptWord(password)]
     const form = new FormData()
     form.append("j_username", j_username)
     form.append("j_password", j_password)
 
-    const resLogin = await customFetch("/oaSingleLoginAction/loginToAuth", {
+    const resLogin = await request("/oaSingleLoginAction/loginToAuth", {
         method: 'POST',
         body: form,
     })
-    const res = await customFetch("/j_spring_security_check", {
+    const res = await request("/j_spring_security_check", {
         method: 'POST',
         body: form,
+        redirect: 'follow'
     })
-
-    let changeStatusRes = await (await changeStatus(2)).json();
+    let changeStatusRes = await (await changeStatus({ status: 2, request })).json();
     while (!changeStatusRes.success) {
         console.log("切换状态失败，将在1分钟后重试");
         sleepSync(1000 * 60);
-        changeStatusRes = await (await changeStatus(2)).json()
+        changeStatusRes = await (await changeStatus({ status: 2, request })).json()
     }
 }
 
-async function checkList() {
+async function checkList(request: any) {
     const form = new FormData()
     form.append("id", "100012593");
     form.append("flowCodes", "INCIDENT");
     form.append("isOrder", "1");
     form.append("limit", "50");
     form.append("start", "0");
-    return customFetch("/filterconditionAction/incidentFiltercondition", {
+    return request("/filterconditionAction/incidentFiltercondition", {
         method: "POST",
         body: form
     })
 }
 //1是离线2是在线
-async function changeStatus(status: number) {
+async function changeStatus({ status, request }: { status: number, request: any }) {
     const form = new FormData();
     form.append("workStatus", status.toString());
-    return customFetch("/systemUserAction/changeStatus", {
+    return request("/systemUserAction/changeStatus", {
         method: "POST",
         body: form
     })
 }
 
-async function logout() {
-    let res = await (await changeStatus(1)).json();
-    while (!res.success) {
-        console.log("切换状态失败，将在1分钟后重试");
-        sleepSync(1000 * 60);
-        res = await (await changeStatus(1)).json()
+function logout(request: any) {
+    return async () => {
+        let res = await (await changeStatus({ status: 2, request })).json();
+        console.log(res)
+        while (!res.success) {
+            console.log("切换状态失败，将在1分钟后重试");
+            sleepSync(1000 * 60);
+            res = await (await changeStatus({ status: 1, request })).json()
+        }
+        console.log("退出登陆")
+        process.exit(1);
     }
-    console.log("退出登陆")
-    process.exit(1);
 }
-login({
-    username: "049081",
-    password: "l123456s"
-});
 
 
 
-const sendMessage = await (await fetch("https://mastergo.chamiedu.com/api/v1/user/registerCode",
-{
-    method: "POST",
-    body: JSON.stringify({ "major_id": 0, "page_size": 0, "is_read": 0, "tel": "18183284846", "user_id": 0, "pagetype": 0, "region": 0, "type_id": 0, "is_new": false, "examination_id": 0, "material_id": 0, "record_id": 0, "curriculum_id": 0, "layer": 0, "about_id": 0, "type": 0, "subjective_id": 0, "subject_id": 0, "id": 0, "problem_id": 0, "statement_id": 0, "tempId": 0, "is_study": 0, "page": 0, "chapter_id": 0, "node_id": 0, "putCorrect_id": 0, "test_id": 0 })
-}
-)).json()
-process.on("SIGINT", logout)
+const sendMessage = async (sendPlatform: string, phone: string) => await (await fetch('https://mastergo.chamiedu.com/api/v1/user/registerCode', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        'major_id': 0,
+        'page_size': 0,
+        'is_read': 0,
+        'tel': phone,
+        'user_id': 0,
+        'pagetype': 0,
+        'region': 0,
+        'type_id': 0,
+        'is_new': false,
+        'examination_id': 0,
+        'material_id': 0,
+        'record_id': 0,
+        'curriculum_id': 0,
+        'layer': 0,
+        'about_id': 0,
+        'type': 0,
+        'subjective_id': 0,
+        'subject_id': 0,
+        'id': 0,
+        'problem_id': 0,
+        'statement_id': 0,
+        'tempId': 0,
+        'is_study': 0,
+        'page': 0,
+        'chapter_id': 0,
+        'node_id': 0,
+        'putCorrect_id': 0,
+        'test_id': 0
+    })
+})).json()
 
 
-function start({user, password, phone}: {
+async function start({ user, password, phone }: {
     user: string,
     password: string,
     phone: string
-}){
-    login({
+}) {
+    const cookie = await pullNewCookie();
+    let httpRequest = customFetch(cookie);
+
+    loginItsm ({
+        request: httpRequest,
         username: user,
         password: password
     });
-    setInterval(async () => {
-        const res = await (await checkList()).json()
+
+    const watchInc = async () => {
+        const res: RootObject = await (await checkList(httpRequest)).json()
         if (res.root.length > 0) {
-            await sendMessage(phone)
-            if(sendMessage.code === 200){
-                console.log("发送成功")
+            let newIncs = []
+            for (const inc of res.root) {
+                if (inc.incNo in record) {//判断是否在记录表中
+                    if (!record[inc.incNo]) {
+                        newIncs.push(inc.incNo)
+                    }
+                } else {
+                    record[inc.incNo] = false;//新工单
+                }
             }
-            console.log(res)
+            if (newIncs.length > 0) {
+                const sendMsg = await sendMessage(phone)
+                if (sendMsg.code === 200) {
+                    for (const inc of newIncs) {//通知过了
+                        record[inc] = true;
+                    }
+                    Bun.write(Bun.file("./sendmsg-log.json"), "发送成功: " + new Date(Date.now()).toLocaleDateString() + " -- " + new Date(Date.now()).toLocaleTimeString())
+                }
+            }
+
             Bun.write(Bun.file("./log.json"), JSON.stringify(res));
         } else {
             console.log(`无工单：${JSON.stringify(res)}`)
         }
-    }, 1000 * 5);
+    };
+    watchInc();
+    setInterval(watchInc, 1000 * 60);
+    process.on("SIGINT", logout(httpRequest));
 }
 
-assert(Bun.argv.length === 5, "需要三个参数，检查命令使用")
-start({
-    user: Bun.argv[2],
-    password: Bun.argv[3],
-    phone: Bun.argv[4]
-})
+// assert(Bun.argv.length === 5, "需要三个参数，检查命令使用")
+// start({
+//     user: Bun.argv[2],
+//     password: Bun.argv[3],
+//     phone: Bun.argv[4]
+// })
+
+
+export { loginItsm, pullNewCookie, checkList, sendMessage, changeStatus }
+
+// const taskQueue = []
+
+// Bun.serve({
+//     port: 3000,
+//     async fetch(request, server) {
+//         const form = await request.formData()
+//         return new Response(`${form.get('11')}`)
+//     },
+// })

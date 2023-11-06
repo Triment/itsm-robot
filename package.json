@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@triment/sweet.js": "^0.0.9",
     "@types/crypto-js": "^4.1.3",
     "crypto-js": "^4.2.0"
   }
