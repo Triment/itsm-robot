@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { createRouter } from '@triment/sweet.js';
-import { changeStatus, checkList, loginItsm, pullNewCookie, sendMessage } from '.';
+import { changeStatus, checkList, loginItsm, pullNewCookie, sendMessage } from './index';
 import { RootObject } from './type';
 import { MessagePlatform } from './sendMessage';
 import { readFileSync } from 'fs';
