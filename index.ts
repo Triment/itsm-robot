@@ -2,6 +2,7 @@ import assert from "assert";
 import { sleepSync } from "bun";
 import { AES, enc, mode, pad } from "crypto-js";
 import { RootObject } from "./type";
+import { sendMessage } from "./sendMessage";
 
 
 let record: Record<string, boolean> = {}
@@ -50,7 +51,6 @@ async function loginItsm({ username, password, request }: { [key: string]: any }
     })
     let changeStatusRes = await (await changeStatus({ status: 2, request })).json();
     while (!changeStatusRes.success) {
-        console.log("切换状态失败，将在1分钟后重试");
         sleepSync(1000 * 60);
         changeStatusRes = await (await changeStatus({ status: 2, request })).json()
     }
@@ -69,6 +69,11 @@ async function checkList(request: any) {
     })
 }
 //1是离线2是在线
+/**
+ * status 1是离线2是在线
+ * @param param0 
+ * @returns 
+ */
 async function changeStatus({ status, request }: { status: number, request: any }) {
     const form = new FormData();
     form.append("workStatus", status.toString());
@@ -91,45 +96,6 @@ function logout(request: any) {
         process.exit(1);
     }
 }
-
-
-
-const sendMessage = async (sendPlatform: string, phone: string) => await (await fetch('https://mastergo.chamiedu.com/api/v1/user/registerCode', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        'major_id': 0,
-        'page_size': 0,
-        'is_read': 0,
-        'tel': phone,
-        'user_id': 0,
-        'pagetype': 0,
-        'region': 0,
-        'type_id': 0,
-        'is_new': false,
-        'examination_id': 0,
-        'material_id': 0,
-        'record_id': 0,
-        'curriculum_id': 0,
-        'layer': 0,
-        'about_id': 0,
-        'type': 0,
-        'subjective_id': 0,
-        'subject_id': 0,
-        'id': 0,
-        'problem_id': 0,
-        'statement_id': 0,
-        'tempId': 0,
-        'is_study': 0,
-        'page': 0,
-        'chapter_id': 0,
-        'node_id': 0,
-        'putCorrect_id': 0,
-        'test_id': 0
-    })
-})).json()
 
 
 async function start({ user, password, phone }: {
@@ -160,7 +126,7 @@ async function start({ user, password, phone }: {
                 }
             }
             if (newIncs.length > 0) {
-                const sendMsg = await sendMessage(phone)
+                const sendMsg = await sendMessage('wenlu', phone)
                 if (sendMsg.code === 200) {
                     for (const inc of newIncs) {//通知过了
                         record[inc] = true;
