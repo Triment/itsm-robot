@@ -23,7 +23,13 @@ const itsmRequest = (Cookie: string) => (
 ) => {
     return fetch(`https://itsm.yimidida.com${url}`, {
         headers: {
-            Cookie
+            Cookie,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "zh-CN,zh;q=0.9",
+            "Connection": "keep-alive",
+            "Host": "itsm.yimidida.com",
+            "sec-ch-ua": "Google Chrome\"\;v=\"119\", \"Chromium\"\;v=\"119\", \"Not?A_Brand\"\;v=\"24\"",
         }, ...init
     });
 };
