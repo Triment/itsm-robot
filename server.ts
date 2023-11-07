@@ -41,7 +41,7 @@ router.POST('/subscribe/itsm/notification', async ({ req, params }) => {
         req.json().then(data => {
             if (validateItsmData(data)) {
                 pullNewCookie().then(cookie => {
-                    const request = itsmRequest(cookie)
+                    const request = itsmRequest(cookie);
                     loginItsm({
                         username: data.username,
                         password: data.password,
@@ -67,6 +67,8 @@ router.POST('/subscribe/itsm/notification', async ({ req, params }) => {
                         resolve(new Response(`${data.username} 登录失败,检查你的帐号密码!`))
                     })
 
+                }).catch(err => {
+                    reject(err)
                 })
             } else {
                 resolve(new Response("检查表单数据是否有误!"));
