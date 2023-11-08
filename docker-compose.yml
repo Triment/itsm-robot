@@ -6,6 +6,6 @@ services:
     ports:
       - 3003:3000
     volumes:
-      - ./log:/usr/src/app/log
-      - ./index.html:/usr/src/app/index.html
+      - "./log:/usr/src/app/log"
+      - "./index.html:/usr/src/app/index.html"
     platform: linux/x86_64
