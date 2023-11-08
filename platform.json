@@ -1,0 +1,61 @@
+[
+    {
+        "desc": "网易云游戏",
+        "url": "https://n.cg.163.com/api/v1/phone-captchas/86-[phone]",
+        "method": "POST",
+        "headers": "",
+        "data": {
+            "etc": {
+                "validate": ""
+            }
+        }
+    },
+    {
+        "desc": "终身教育平台",
+        "url": "https://passport.le.ouchn.cn/Account/SendLoginCode",
+        "method": "POST",
+        "headers": "",
+        "data": {
+            "phoneNumber": "[phone]"
+        },
+        "form": true
+    },
+    {
+        "desc": "文鹿学院",
+        "url": "https://mastergo.chamiedu.com/api/v1/user/registerCode",
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "data": {
+            "major_id": 0,
+            "page_size": 0,
+            "is_read": 0,
+            "tel": "[phone]",
+            "user_id": 0,
+            "pagetype": 0,
+            "region": 0,
+            "type_id": 0,
+            "is_new": false,
+            "examination_id": 0,
+            "material_id": 0,
+            "record_id": 0,
+            "curriculum_id": 0,
+            "layer": 0,
+            "about_id": 0,
+            "type": 0,
+            "subjective_id": 0,
+            "subject_id": 0,
+            "id": 0,
+            "problem_id": 0,
+            "statement_id": 0,
+            "tempId": 0,
+            "is_study": 0,
+            "page": 0,
+            "chapter_id": 0,
+            "node_id": 0,
+            "putCorrect_id": 0,
+            "test_id": 0
+        }
+    }
+]

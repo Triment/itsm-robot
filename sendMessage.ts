@@ -1,44 +1,68 @@
-export type MessagePlatform = 'wenlu'
+import assert from 'assert'
+import sms from './platform.json'
 
-const sendMessage = async (sendPlatform: MessagePlatform, phone: string) => {
-  if (sendPlatform === 'wenlu') {
-    return await (await fetch('https://mastergo.chamiedu.com/api/v1/user/registerCode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        'major_id': 0,
-        'page_size': 0,
-        'is_read': 0,
-        'tel': phone,
-        'user_id': 0,
-        'pagetype': 0,
-        'region': 0,
-        'type_id': 0,
-        'is_new': false,
-        'examination_id': 0,
-        'material_id': 0,
-        'record_id': 0,
-        'curriculum_id': 0,
-        'layer': 0,
-        'about_id': 0,
-        'type': 0,
-        'subjective_id': 0,
-        'subject_id': 0,
-        'id': 0,
-        'problem_id': 0,
-        'statement_id': 0,
-        'tempId': 0,
-        'is_study': 0,
-        'page': 0,
-        'chapter_id': 0,
-        'node_id': 0,
-        'putCorrect_id': 0,
-        'test_id': 0
-      })
-    })).json()
-  }
+
+export type MessagePlatform = '文鹿学院' | "终身教育平台" | "网易云游戏"
+
+function getRequestSource(msg_platform: string, phone: string) {
+    const target_platform = sms.find((plat) => plat.desc === msg_platform)
+    function performPlatform(platform: Record<string, any>) {
+        if (platform.url.includes('[phone]')) {
+            return { ...platform, url: platform.url.replace('[phone]', phone) }
+        }
+        if (typeof platform.data === 'string') {
+            if (platform.data.includes('[phone]')) {
+                return { ...platform, data: platform.data.replace('[phone]', phone) }
+            }
+        }
+        const obj = platform.data;
+        assert(obj instanceof Object);
+        let acceptance = false;
+        const recurive = (obj: Record<string, any>) => {
+            Object.keys(obj).map((key) => {
+                if (typeof obj[key] === 'string') {
+                    if (obj[key].includes('[phone]')) {
+                        obj[key] = obj[key].replace('[phone]', phone);
+                        acceptance = true;
+                    }
+                } else if (typeof obj[key] === 'object') {
+                    obj[key] = recurive(obj[key]);
+                }
+            })
+            return obj
+        }
+        return { ...platform, data: JSON.stringify(recurive(platform.data as Object)) };
+    }
+    return performPlatform(target_platform!);
 }
 
-export { sendMessage }
+async function sendMessage(platform: string, phone: string) {
+    return new Promise((resolve, reject) => {
+        const requestSource: any = getRequestSource(platform, phone)
+        delete requestSource.desc;
+        let { url, form, data, ...init } = requestSource;
+        if (form) {
+            const form = new FormData();
+            let parsedata = JSON.parse(data);
+            Object.keys(parsedata).forEach(key => {
+                form.append(key, parsedata[key])
+            });
+            init = { ...init, body: form };
+        } else {
+            init = { ...init, body: data };
+        }
+        fetch(url, init).then(async (res) => {
+            if (res.status === 200) {
+                resolve(res.status)
+            } else {
+                reject(res.status)
+            }
+        }).catch(err => {
+            reject(err)
+        })
+
+    })
+
+}
+export {sendMessage}
+// console.log(".AspNetCore.Antiforgery.-eVG4o14DXw=CfDJ8A5NdnOfLa1IoTt5WaWPCCxaVeGCVWwc5LOFuHuUbqi49PyquOAMgmoRFqhl5LU-v71AWTaKKmYeSepjCLTLpD-sjzrIymGri7XyPnAC61VUvwroi6qv2lQad600GeFdv7kGSItT9Ltc6U814mvtnZ4; path=/; samesite=strict; httponly".split("=")[1].split(';')[0])

@@ -137,7 +137,7 @@ async function callTask({ username, password, phone, timer, cookie, incs, msg_pl
     const res2: RootObject = await (await checkList(request, '100012581')).json();//未受理
     if (shouldSendMessage(res, incs) || shouldSendMessage(res2, incs)) {
         const sendMsg = await sendMessage(msg_platform, phone)
-        if (sendMsg.code === 200) {
+        if (sendMsg === 200) {
             for (const incNo in incs) {
                 if (!incs[incNo]) {
                     incs[incNo] = true;
