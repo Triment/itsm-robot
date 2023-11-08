@@ -55,10 +55,15 @@ async function loginItsm({ username, password, request }: { [key: string]: any }
         changeStatusRes = await (await changeStatus({ status: 2, request })).json()
     }
 }
-
-async function checkList(request: any) {
+/**
+ * id 为100012581是待受理 id为100012593已受理未解决
+ * @param request 
+ * @param id 
+ * @returns 
+ */
+async function checkList(request: any, id: string) {
     const form = new FormData()
-    form.append("id", "100012593");
+    form.append("id", id);
     form.append("flowCodes", "INCIDENT");
     form.append("isOrder", "1");
     form.append("limit", "50");

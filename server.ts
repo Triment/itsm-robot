@@ -133,23 +133,9 @@ Bun.serve({
 const logFileWriter = Bun.file(resolve("./logs/sendmsg-log.log")).writer();
 async function callTask({ username, password, phone, timer, cookie, incs, msg_platform }: SubscribeItsmBodyType) {
     const request = itsmRequest(cookie!);//获取到请求对象
-    const res: RootObject = await (await checkList(request)).json();
-    if (res.root.length > 0) {
-        for (const inc of res.root) {
-            const status = incs[inc.incNo];
-            if (status === undefined) {
-                incs[inc.incNo] = false;
-            }
-        }
-    }
-    let shouldSend = false
-    for (const incNo in incs) {
-        if (!incs[incNo]) {
-            shouldSend = true;
-            break;
-        }
-    }
-    if (shouldSend) {
+    const res: RootObject = await (await checkList(request, '100012593')).json();//
+    const res2: RootObject = await (await checkList(request, '100012581')).json();//未受理
+    if (shouldSendMessage(res, incs) || shouldSendMessage(res2, incs)) {
         const sendMsg = await sendMessage(msg_platform, phone)
         if (sendMsg.code === 200) {
             for (const incNo in incs) {
@@ -170,6 +156,25 @@ async function callTask({ username, password, phone, timer, cookie, incs, msg_pl
             logFileWriter.flush();
         }
     }
+}
+
+function shouldSendMessage(res: RootObject, incs: Record<string, boolean>) {
+    if (res.root.length > 0) {
+        for (const inc of res.root) {
+            const status = incs[inc.incNo];
+            if (status === undefined) {
+                incs[inc.incNo] = false;
+            }
+        }
+    }
+    let shouldSend = false
+    for (const incNo in incs) {
+        if (!incs[incNo]) {
+            shouldSend = true;
+            break;
+        }
+    }
+    return shouldSend
 }
 
 function checkItsmTask() {
