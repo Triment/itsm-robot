@@ -5,5 +5,6 @@ services:
     ports:
       - 3003:3000
     volumes:
-      - .:/usr/src/app/
+      - ./sendmsg-log.log:/usr/src/app/sendmsg-log.log
+      - ./index.html:/usr/src/app/index.html
     platform: linux/x86_64
