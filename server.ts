@@ -130,7 +130,7 @@ Bun.serve({
     port: 3000,
     fetch: serverFetch
 })
-const logFileWriter = Bun.file(resolve("./log/sendmsg-log.log")).writer();
+const logFileWriter = Bun.file(resolve("./logs/sendmsg-log.log")).writer();
 async function callTask({ username, password, phone, timer, cookie, incs, msg_platform }: SubscribeItsmBodyType) {
     const request = itsmRequest(cookie!);//获取到请求对象
     const res: RootObject = await (await checkList(request)).json();
