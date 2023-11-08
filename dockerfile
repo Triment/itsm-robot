@@ -33,6 +33,7 @@ COPY --from=prerelease /usr/src/app/server.ts .
 COPY --from=prerelease /usr/src/app/index.ts .
 COPY --from=prerelease /usr/src/app/sendMessage.ts .
 COPY --from=prerelease /usr/src/app/package.json .
+COPY --from=prerelease /usr/src/app/platform.json .
 
 # run the app
 USER bun
