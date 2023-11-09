@@ -51,7 +51,9 @@ async function sendMessage(platform: string, phone: string) {
         } else {
             init = { ...init, body: data };
         }
+        console.log(url, init)
         fetch(url, init).then(async (res) => {
+            console.log(res)
             if (res.status === 200) {
                 resolve(res.status)
             } else {
@@ -62,7 +64,7 @@ async function sendMessage(platform: string, phone: string) {
         })
 
     })
-
 }
+
 export {sendMessage}
 // console.log(".AspNetCore.Antiforgery.-eVG4o14DXw=CfDJ8A5NdnOfLa1IoTt5WaWPCCxaVeGCVWwc5LOFuHuUbqi49PyquOAMgmoRFqhl5LU-v71AWTaKKmYeSepjCLTLpD-sjzrIymGri7XyPnAC61VUvwroi6qv2lQad600GeFdv7kGSItT9Ltc6U814mvtnZ4; path=/; samesite=strict; httponly".split("=")[1].split(';')[0])

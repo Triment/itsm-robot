@@ -3,7 +3,7 @@
         "desc": "网易云游戏",
         "url": "https://n.cg.163.com/api/v1/phone-captchas/86-[phone]",
         "method": "POST",
-        "headers": "",
+        "headers": {},
         "data": {
             "etc": {
                 "validate": ""
@@ -14,7 +14,7 @@
         "desc": "终身教育平台",
         "url": "https://passport.le.ouchn.cn/Account/SendLoginCode",
         "method": "POST",
-        "headers": "",
+        "headers": {},
         "data": {
             "phoneNumber": "[phone]"
         },
